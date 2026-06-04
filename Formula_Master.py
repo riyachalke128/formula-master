@@ -11,11 +11,6 @@ if 'score' not in st.session_state: st.session_state.score = 0
 st.set_page_config(page_title="FormulaMaster Pro", layout="wide")
 st.title("FormulaMaster Pro - Ultimate")
 
-# Global App Variables to track progress
-selected_subject = "Physics"
-selected_mode = "Boards"
-current_question_idx = 0
-score = 0
 
 # Comprehensive 3-Subject Database (Boards & MCQ Quiz Engine)
 # --- MASTER 1oo+ FORMULA & EXAM SIMULATOR DATABASE ---
@@ -334,19 +329,27 @@ if mode == "Boards":
 
 else:
     st.markdown("### JEE MCQ Quiz")
-    q_data = database[st.session_state.selected_subject]["Quiz"][st.session_state.current_question_idx]
-    st.write(f"**Question:** {q_data['question']}")
-    for option in q_data['options']:
-        if st.button(option):
-            st.write(f"Result: {q_data['correct']}")
-            st.write(f"Solution: {q_data['solution']}")
-
-# Display the question
-st.write(f"### Question {st.session_state.current_question_idx + 1}")
-st.write(q_data['question'])
-
-# Display options as a radio button (this replaces radio buttons + loop)
-user_choice = st.radio("Choose an option:", q_data["options"], key="user_answer")
+    
+    # Get the question list for the subject
+    questions_list = database[st.session_state.selected_subject]["Quiz"]
+    q_data = questions_list[st.session_state.current_question_idx]
+    
+    # Display the question
+    st.write(f"**Question {st.session_state.current_question_idx + 1}:**")
+    st.write(q_data['question'])
+    
+    # Display options as a radio button
+    user_choice = st.radio("Choose an option:", q_data['options'], key="user_answer")
+    
+    # Check Answer Logic
+    if st.button("SUBMIT ANSWER"):
+        if user_choice == q_data['correct']:
+            st.success("Correct!")
+            st.session_state.score += 1
+        else:
+            st.error(f"Incorrect. The correct answer was: {q_data['correct']}")
+        
+        st.write(f"Solution: {q_data['solution']}")
 
 
 # --- CHECK ANSWER LOGIC ---
@@ -358,55 +361,43 @@ if st.button("SUBMIT ANSWER"):
     else:
         st.error(f"Incorrect. The correct answer was: {q_data['correct']}")
     
-    # Show solution
+    # Always show solution
     st.info(f"**Solution:** {q_data['solution']}")
-    
-    # Optional: Add a button to move to the next question
-    if st.button("Next Question"):
-        st.session_state.current_question_idx += 1
-        st.rerun()
-        
-def next_question():
-    # 1. Get the list of questions for the currently selected subject
-    questions_list = database[st.session_state.selected_subject]["Quiz"]
-    
-    # 2. Update the index using session state
-    st.session_state.current_question_idx = (st.session_state.current_question_idx + 1) % len(questions_list)
-    
-    # 3. Force the app to refresh so the new question shows up
-    st.rerun()
-    
-# --- SUBJECT SWITCHING ---
-# Use these blocks instead of 'def switch_subject(subject):'
-import streamlit as st
 
+# --- NEXT QUESTION LOGIC ---
+if st.button("Next Question"):
+    # Update the index to move to the next question
+    # This uses modulo (%) to loop back to the first question if at the end
+    questions_list = database[st.session_state.selected_subject]["Quiz"]
+    st.session_state.current_question_idx = (st.session_state.current_question_idx + 1) % len(questions_list)
+    st.rerun()
+
+# --- SUBJECT SWITCHING ---
 col1, col2, col3 = st.columns(3)
 
-if col1.button("PHYSICS"):
-    st.write("Physics selected")
-
-if col2.button("CHEMISTRY"):
-    st.write("Chemistry selected")
-
-if col3.button("MATHEMATICS"):
-    st.write("Mathematics selected")
-
-# --- MODE SWITCHING ---
-# Use these blocks instead of 'def switch_mode(mode):'
-if mode1.button("Boards Study Guide"):
-    st.session_state.selected_mode = "Boards"
+if col1.button("PHYSICS"): 
+    st.session_state.selected_subject = "Physics"
     st.rerun()
 
-if mode2.button("JEE Target Simulator"):
-    st.session_state.selected_mode = "JEE"
-    st.session_state.current_question_idx = 0
+if col2.button("CHEMISTRY"): 
+    st.session_state.selected_subject = "Chemistry"
     st.rerun()
-    
+
+if col3.button("MATHEMATICS"): 
+    # Make sure this string ("Maths") matches your key in your database!
+    st.session_state.selected_subject = "Maths" 
+    st.rerun()
+
 # --- GRAPHICAL INTERFACE LAYOUT ---
 
 # --- HEADER PANEL ---
-# This replaces your tk.Frame and tk.Label
-st.markdown("<h1 style='text-align: center; color: #f8fafc; font-family: Arial;'>FORMULA MASTER PRO (3-IN-1 ENGINE)</h1>", unsafe_allow_html=True)
+# Streamlit uses st.markdown for styled text. 
+# Do not use tk.Frame or tk.Label.
+
+st.markdown(
+    "<h1 style='text-align: center; color: #f8fafc; font-family: Arial;'>FORMULA MASTER PRO (3-IN-1 ENGINE)</h1>", 
+    unsafe_allow_html=True
+)
 
 import streamlit as st
 
@@ -418,9 +409,18 @@ if 'subject' not in st.session_state:
 
 # Buttons to switch subjects
 col1, col2, col3 = st.columns(3)
-if col1.button("PHYSICS"): st.session_state.subject = 'Physics'
-if col2.button("CHEMISTRY"): st.session_state.subject = 'Chemistry'
-if col3.button("MATHEMATICS"): st.session_state.subject = 'Mathematics'
+
+if col1.button("PHYSICS"): 
+    st.session_state.subject = 'Physics'
+    st.rerun()
+
+if col2.button("CHEMISTRY"): 
+    st.session_state.subject = 'Chemistry'
+    st.rerun()
+
+if col3.button("MATHEMATICS"): 
+    st.session_state.subject = 'Mathematics'
+    st.rerun()
 
 st.divider()
 
@@ -452,50 +452,43 @@ mode_col1, mode_col2 = st.columns(2)
 with mode_col1:
     if st.button("Boards Study Guide"):
         st.session_state.selected_mode = "Boards"
+        st.rerun() # ADD THIS
 
 with mode_col2:
     if st.button("JEE Target Simulator"):
         st.session_state.selected_mode = "JEE"
-
+        st.rerun() # ADD THIS
 
 # --- WORKSPACE FRAMES ---
 
-# Container A: Boards Text Output Engine
-with st.container():
-    st.markdown("### Boards Study Guide")
-    st.markdown("""
-    <div style='background-color: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 5px; font-family: Courier New;'>
-    Formula content will display here based on your selection.
-    </div>
-    """, unsafe_allow_html=True)
+# 1. Boards Study Guide Logic
+if st.session_state.selected_mode == "Boards":
+    with st.container():
+        st.markdown("### Boards Study Guide")
+        st.markdown("<div style='background-color: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 5px; font-family: Courier New;'>Formula content will display here based on your selection.</div>", unsafe_allow_html=True)
 
-st.markdown("---") # Divider line
-
-# Container B: JEE MCQ Interactive Quiz Layout
-with st.container():
-    st.markdown("### JEE MCQ Interactive Quiz")
-    st.write(f"**Session Score:** {st.session_state.get('score', 0)}")
-    
-    # Question Display
-    st.markdown("**Question text container goes here**")
-    
-    # Option Selectors Container
-    options = ["Option A", "Option B", "Option C", "Option D"]
-    choice = st.radio("Select an answer:", options)
-    
-    # Quiz Interaction Controls
-    # Using columns so buttons sit side-by-side
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("SUBMIT ANSWER"):
-            st.success(f"You selected: {choice}")
-            # Logic to update score would go here
-            
-    with col2:
-        if st.button("NEXT QUESTION →"):
-            st.write("Loading next question...")
-
+# 2. JEE MCQ Interactive Quiz Logic
+elif st.session_state.selected_mode == "JEE":
+    with st.container():
+        st.markdown("### JEE MCQ Interactive Quiz")
+        st.write(f"**Session Score:** {st.session_state.get('score', 0)}")
+        
+        # Question Display
+        st.markdown("**Question text container goes here**")
+        
+        # Option Selectors
+        options = ["Option A", "Option B", "Option C", "Option D"]
+        choice = st.radio("Select an answer:", options)
+        
+        # Quiz Interaction Controls (Columns)
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("SUBMIT ANSWER"):
+                st.success(f"You selected: {choice}")
+        with col2:
+            if st.button("Next Question"):
+                # Logic for next question
+                st.rerun()
 
 # --- OPTION SELECTORS CONTAINER ---
 # This single line replaces the entire loop and the tk.StringVar() logic
@@ -503,20 +496,31 @@ options = ["Option A", "Option B", "Option C", "Option D"]
 user_choice = st.radio("Select an answer:", options, key="quiz_choice")
 
 # --- QUIZ INTERACTION CONTROLS ---
-
 # Create two columns to place buttons side-by-side
 btn_col1, btn_col2 = st.columns(2)
 
 with btn_col1:
     if st.button("SUBMIT ANSWER"):
-        # Put your logic here (e.g., checking if choice == correct_answer)
-        st.write("Checking answer...")
+        # Logic to check the answer
+        # Assuming your database structure is: database[subject]["Quiz"][idx]
+        q_data = database[st.session_state.subject]["Quiz"][st.session_state.current_question_idx]
+        
+        if st.session_state.get('quiz_choice') == q_data['correct']:
+            st.session_state.score += 1
+            st.success("Correct!")
+        else:
+            st.error(f"Incorrect. The correct answer was: {q_data['correct']}")
+        
+        st.session_state.show_solution = True
+        st.rerun()
 
 with btn_col2:
     if st.button("NEXT QUESTION →"):
-        # Put your logic to increment the question index here
-        st.write("Loading next question...")
-        
+        # Increment index and reset solution visibility
+        st.session_state.current_question_idx += 1
+        st.session_state.show_solution = False
+        st.rerun()
+
 # --- LIVE EXPLANATION BOX ---
 # Instead of a Label, we use a status container that appears only when needed
 if st.session_state.get('show_solution', False):
