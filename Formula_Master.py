@@ -322,26 +322,24 @@ else:
     # Add your answer buttons here using st.button()
 
 
-  # --- CONTENT DISPLAY ---
-if st.session_state.selected_mode == "Boards":
-    # This replaces the 'boards_text' logic
+# --- FINAL DISPLAY LOGIC ---
+st.divider()
+
+# Mode selection
+mode = st.radio("Select View Mode:", ["Boards", "Quiz"])
+
+if mode == "Boards":
     st.markdown("### Study Guide Content")
-    # Fetch your data from your database here
-    content = database[st.session_state.selected_subject]["Boards"]
-    st.info(content) 
+    st.info(database[st.session_state.selected_subject]["Boards"])
 
 else:
-    # This replaces the 'quiz_frame' logic
     st.markdown("### JEE MCQ Quiz")
-    # This displays your question
-    questions_list = database[st.session_state.selected_subject]["Quiz"]
-    q_data = questions_list[st.session_state.get('current_question_idx', 0)]
+    q_data = database[st.session_state.selected_subject]["Quiz"][st.session_state.current_question_idx]
     st.write(f"**Question:** {q_data['question']}")
-    
-# --- LOAD QUIZ LOGIC ---
-# Get current question from database
-questions_list = database[st.session_state.selected_subject]["Quiz"]
-q_data = questions_list[st.session_state.get('current_question_idx', 0)]
+    for option in q_data['options']:
+        if st.button(option):
+            st.write(f"Result: {q_data['correct']}")
+            st.write(f"Solution: {q_data['solution']}")
 
 # Display the question
 st.write(f"### Question {st.session_state.current_question_idx + 1}")
