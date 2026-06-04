@@ -410,36 +410,40 @@ if mode2.button("JEE Target Simulator"):
 # This replaces your tk.Frame and tk.Label
 st.markdown("<h1 style='text-align: center; color: #f8fafc; font-family: Arial;'>FORMULA MASTER PRO (3-IN-1 ENGINE)</h1>", unsafe_allow_html=True)
 
-# --- ROW 1: SUBJECT SELECTION TOOLBAR ---
-st.markdown("### Select Subject")
-
-# Define columns
-col1, col2, col3 = st.columns(3)
-
 import streamlit as st
 
-# Force initialization at the very top
-if 'selected_subject' not in st.session_state:
-    st.session_state.selected_subject = "Not Selected"
+st.title("FormulaMaster Pro - Ultimate")
 
-# Define columns immediately
+# Initialize subject selection
+if 'subject' not in st.session_state:
+    st.session_state.subject = 'Physics'
+
+# Buttons to switch subjects
 col1, col2, col3 = st.columns(3)
+if col1.button("PHYSICS"): st.session_state.subject = 'Physics'
+if col2.button("CHEMISTRY"): st.session_state.subject = 'Chemistry'
+if col3.button("MATHEMATICS"): st.session_state.subject = 'Mathematics'
 
-# Use columns
-if col1.button("PHYSICS"):
-    st.session_state.selected_subject = "Physics"
-    st.rerun()
+st.divider()
 
-if col2.button("CHEMISTRY"):
-    st.session_state.selected_subject = "Chemistry"
-    st.rerun()
+# Display content based on selection
+if st.session_state.subject == 'Physics':
+    st.header("Physics Formulas")
+    st.write("- Average Speed = Total Distance / Total Time")
+    st.write("- Instantaneous Acceleration: a = dv/dt = d²x/dt²")
+    # Add more physics formulas here
 
-if col3.button("MATHEMATICS"):
-    st.session_state.selected_subject = "Mathematics"
-    st.rerun()
+elif st.session_state.subject == 'Chemistry':
+    st.header("Chemistry Formulas")
+    st.write("- Molarity (M) = Moles of solute / Liters of solution")
+    st.write("- Ideal Gas Law: PV = nRT")
+    # Add more chemistry formulas here
 
-st.write("Current Subject:", st.session_state.selected_subject)
-        
+elif st.session_state.subject == 'Mathematics':
+    st.header("Mathematics Formulas")
+    st.write("- Area of a Circle: πr²")
+    st.write("- Pythagorean Theorem: a² + b² = c²")
+    # Add more math formulas here
 
 # Show selection feedback
 st.write(f"### Current Subject: {st.session_state.selected_subject}")
